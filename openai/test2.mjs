@@ -1,5 +1,9 @@
 import OpenAI from 'openai'
 import fs from 'node:fs'
+import dotenv from 'dotenv'
+
+// 加载环境变量
+dotenv.config()
 
 const client = new OpenAI({
   apiKey: process.env.APIKEY,
@@ -10,11 +14,11 @@ async function main() {
   const stream = await client.chat.completions.create({
     model: 'gpt-4',
     messages: [
-      { role: 'system', content: fs.readFileSync('./src/system.md', 'utf-8') },
+      { role: 'system', content: fs.readFileSync('./system.md', 'utf-8') },
       { role: 'user', content: '生成一个 Table 的 React 组件' },
       {
         role: 'assistant',
-        content: fs.readFileSync('./src/response1.md', 'utf-8')
+        content: fs.readFileSync('./response1.md', 'utf-8')
       },
       {
         role: 'user',
@@ -45,7 +49,7 @@ async function main() {
               },
               code4: {
                 type: 'string',
-                description: '生成的 styles.ts 代码'
+                description: '生成的 styles.scss 代码'
               }
             },
             required: ['code1', 'code2', 'code3', 'code4']
