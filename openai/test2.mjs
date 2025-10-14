@@ -12,7 +12,8 @@ const client = new OpenAI({
 
 async function main() {
   const stream = await client.chat.completions.create({
-    model: 'gpt-4',
+    // model: 'gpt-5-pro',
+    model: 'gpt-5',
     messages: [
       { role: 'system', content: fs.readFileSync('./system.md', 'utf-8') },
       { role: 'user', content: '生成一个 Table 的 React 组件' },
@@ -60,7 +61,14 @@ async function main() {
     // stream: true
   })
 
-  console.log(stream.choices[0].message.tool_calls[0].function)
+  // 流
+  // for await (const chunk of stream) {
+  //   if (chunk.choices[0]?.delta?.tool_calls) {
+  //     console.log(chunk.choices[0].delta.tool_calls)
+  //   }
+  // }
+
+  console.log(stream.choices[0]?.message?.tool_calls[0]?.function)
 }
 
 main()
