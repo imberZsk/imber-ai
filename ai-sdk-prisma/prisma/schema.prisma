@@ -1,0 +1,99 @@
+// 这是您的 Prisma schema 文件，
+// 了解更多信息请访问文档：https://pris.ly/d/prisma-schema
+
+// 想要加速查询，或者在无服务器或边缘函数中轻松扩展？
+// 试试 Prisma Accelerate：https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// 聊天会话模型
+/// 代表一次完整的对话会话，包含多条消息
+model Session {
+  /// 会话唯一标识符
+  /// 注意：这里使用 @id 但没有 @default，需要在创建时手动指定 ID
+  id        String    @id
+  /// 会话创建时间，自动设置为当前时间
+  createdAt DateTime  @default(now())
+  /// 会话更新时间，每次更新时自动更新
+  updatedAt DateTime  @updatedAt
+  /// 会话中的所有消息（一对多关系）
+  messages  Message[]
+}
+
+/// 聊天消息模型
+/// 代表会话中的单条消息，可以是用户消息或助手消息
+model Message {
+  /// 消息唯一标识符，使用 cuid() 自动生成
+  id        String      @id @default(cuid())
+  /// 消息角色（用户或助手）
+  role      MessageRole
+  /// 消息内容（使用 TEXT 类型以支持长文本消息）
+  content   String   @db.Text
+  /// 消息创建时间，自动设置为当前时间
+  createdAt DateTime    @default(now())
+  /// 所属会话 ID（外键字段）
+  sessionId String
+  /// 所属会话（关系字段）
+  /// @relation 参数说明：
+  /// - fields: [sessionId] - 当前模型（Message）中的外键字段名
+  /// - references: [id] - 被引用模型（Session）中的主键字段名
+  /// - onDelete: Cascade - 当会话被删除时，级联删除其所有消息
+  session   Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+/// 消息角色枚举
+/// 定义消息的发送者类型
+enum MessageRole {
+  /// 用户消息
+  USER
+  /// 助手（AI）消息
+  ASSISTANT
+}
+
+/// 用户模型
+model User {
+  /// 唯一标识符，使用 UUID 格式
+  /// 注意：@id 已经保证唯一性，不需要再加 @unique
+  id        String   @id @default(uuid())
+  /// 用户名
+  name      String?
+  /// 邮箱
+  email     String   @unique
+  /// 创建时间，自动设置为当前时间
+  createdAt DateTime @default(now())
+  /// 更新时间，每次更新时自动更新
+  updatedAt DateTime @updatedAt
+  /// 用户的所有待办事项
+  todos     Todo[]
+}
+
+/// 待办事项模型
+model Todo {
+  /// 唯一标识符，使用 UUID 格式
+  /// 注意：@id 已经保证唯一性，不需要再加 @unique
+  id        String  @id @default(uuid())
+  /// 待办事项标题
+  title     String
+  /// 完成状态，默认为未完成
+  completed Boolean  @default(false)
+  /// 创建时间，自动设置为当前时间
+  createdAt DateTime @default(now())
+  /// 更新时间，每次更新时自动更新
+  updatedAt DateTime @updatedAt
+  /// 所属用户 ID（外键字段）
+  userId    String
+  /// 所属用户（关系字段）
+  /// @relation 参数说明：
+  /// - fields: [userId] - 当前模型（Todo）中的外键字段名
+  /// - references: [id] - 被引用模型（User）中的主键字段名
+  /// - onDelete: Cascade - 当用户被删除时，级联删除其所有待办事项
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
