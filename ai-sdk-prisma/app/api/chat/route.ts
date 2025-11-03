@@ -1,6 +1,9 @@
 import { createOpenAI } from '@ai-sdk/openai'
-import { streamText, UIMessage, convertToModelMessages } from 'ai'
+import { UIMessage, convertToModelMessages, streamText } from 'ai'
 import { saveChat } from '@/lib/save-chat'
+import { add_todo, list_todos, toggle_todo, delete_todo } from './todos-ai-sdk'
+import { ollama } from 'ollama-ai-provider-v2'
+import { createOllama } from 'ollama-ai-provider-v2'
 
 /// 最大执行时间（秒），用于服务器less函数超时设置
 export const maxDuration = 300
@@ -26,19 +29,37 @@ export async function POST(req: Request) {
   const apiKey = process.env.OPENAI_API_KEY
 
   // 验证环境变量是否存在
-  if (!baseURL || !apiKey) {
-    throw new Error('OPENAI_BASE_URL 和 OPENAI_API_KEY 必须配置')
-  }
+  // if (!baseURL || !apiKey) {
+  //   throw new Error('OPENAI_BASE_URL 和 OPENAI_API_KEY 必须配置')
+  // }
 
   const openai = createOpenAI({
     baseURL,
     apiKey
   })
 
+  const ollama = createOllama({
+    // optional settings, e.g.
+    baseURL: 'http://localhost:11434/api'
+  })
+
   // 将 UI 消息转换为 AI 模型预期的格式，并创建流式文本响应
   const result = streamText({
-    model: openai('gpt-4o'),
-    messages: convertToModelMessages(messages)
+    // model: openai('gpt-5'),
+    model: ollama('deepseek-r1:1.5b'),
+    messages: convertToModelMessages(messages),
+    temperature: 0.2,
+    system:
+      `你是一个待办助手。` +
+      `当用户提出需求时，用中文简洁回复；` +
+      `需要增删改查时请触发工具。` +
+      `若无法执行，请给出明确的错误原因与下一步建议。`,
+    tools: {
+      add_todo,
+      list_todos,
+      toggle_todo,
+      delete_todo
+    }
   })
 
   // 将 AI 响应实时流式传输回客户端
