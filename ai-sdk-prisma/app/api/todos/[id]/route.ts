@@ -27,10 +27,7 @@ export async function PATCH(
     return NextResponse.json({ todo })
   } catch (error) {
     console.error('Error updating todo:', error)
-    return NextResponse.json(
-      { error: '更新待办事项失败' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: '更新待办事项失败' }, { status: 500 })
   }
 }
 
@@ -46,7 +43,7 @@ export async function DELETE(
     // 兼容 Next.js 15+ 的异步 params 和旧版本的同步 params
     const resolvedParams = await Promise.resolve(params)
     const id = resolvedParams.id
-    
+
     await prisma.todo.delete({
       where: { id }
     })
@@ -54,10 +51,6 @@ export async function DELETE(
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting todo:', error)
-    return NextResponse.json(
-      { error: '删除待办事项失败' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: '删除待办事项失败' }, { status: 500 })
   }
 }
-

@@ -36,10 +36,15 @@ export async function saveChat(messages: UIMessage[], id: string) {
     // 默认将所有消息部分序列化为 JSON
     let content = JSON.stringify(msg.parts)
 
-    // 如果是AI助手消息，只保存文本部分，过滤掉其他类型的部分（如图片、文件等）
+    // 如果是AI助手消息，保存文本部分和工具调用相关的部分
+    // 过滤掉图片、文件等其他类型，但保留工具调用（tool-*）以支持 todo 列表等功能的持久化
     if (msg.role === 'assistant') {
-      const textParts = msg.parts.filter((part) => part.type === 'text')
-      content = JSON.stringify(textParts)
+      const importantParts = msg.parts.filter(
+        (part) =>
+          part.type === 'text' ||
+          (typeof part.type === 'string' && part.type.startsWith('tool-'))
+      )
+      content = JSON.stringify(importantParts)
     }
 
     // 将消息保存到数据库，关联到对应的会话
