@@ -23,14 +23,22 @@ export async function POST(req: Request) {
   // - OpenAI 标准：https://api.openai.com/v1
   // - 兼容 API（需要 /v1）：https://api.302.ai/v1
   // - 自定义格式：https://api.302.ai（根据 API 文档配置）
-  const baseURL = process.env.OPENAI_BASE_URL
+  let baseURL = process.env.OPENAI_BASE_URL
   const apiKey = process.env.OPENAI_API_KEY
 
   // 验证环境变量是否存在
-  // if (!baseURL || !apiKey) {
-  //   throw new Error('OPENAI_BASE_URL 和 OPENAI_API_KEY 必须配置')
-  // }
+  if (!baseURL || !apiKey) {
+    throw new Error('OPENAI_BASE_URL 和 OPENAI_API_KEY 必须配置')
+  }
 
+  // 确保 baseURL 包含 /v1 后缀（对于兼容的 OpenAI API）
+  // 如果 baseURL 不包含 /v1，自动添加
+  if (baseURL && !baseURL.endsWith('/v1')) {
+    baseURL = baseURL.endsWith('/') ? `${baseURL}v1` : `${baseURL}/v1`
+  }
+
+  // 创建自定义 OpenAI 客户端
+  // 确保 baseURL 包含 /v1，这样会使用正确的路径 /v1/chat/completions
   const openai = createOpenAI({
     baseURL,
     apiKey
@@ -45,6 +53,7 @@ export async function POST(req: Request) {
       `你是一个待办助手。` +
       `当用户提出需求时，用中文简洁回复；` +
       `需要增删改查时请触发工具。` +
+      `使用 list_todos 工具时：如果用户说"列出全部"、"列出所有"、"显示所有待办"等，必须传递 filter: "all" 或不传 filter 参数；只有当用户明确说"只列出已完成的"时才传 filter: "completed"；只有当用户明确说"只列出未完成的"时才传 filter: "incomplete"。` +
       `若无法执行，请给出明确的错误原因与下一步建议。`,
     tools: {
       add_todo,

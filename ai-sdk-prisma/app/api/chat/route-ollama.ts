@@ -23,13 +23,14 @@ export async function POST(req: Request) {
 
   // 将 UI 消息转换为 AI 模型预期的格式，并创建流式文本响应
   const result = streamText({
-    model: ollama('deepseek-r1:1.5b'),
+    model: ollama('deepseek-r1:1.5b'), //gpt-oss:20b
     messages: convertToModelMessages(messages),
     temperature: 0.2,
     system:
       `你是一个待办助手。` +
       `当用户提出需求时，用中文简洁回复；` +
       `需要增删改查时请触发工具。` +
+      `使用 list_todos 工具时：如果用户说"列出全部"、"列出所有"、"显示所有待办"等，必须传递 filter: "all" 或不传 filter 参数；只有当用户明确说"只列出已完成的"时才传 filter: "completed"；只有当用户明确说"只列出未完成的"时才传 filter: "incomplete"。` +
       `若无法执行，请给出明确的错误原因与下一步建议。`,
     tools: {
       add_todo,

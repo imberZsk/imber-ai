@@ -25,12 +25,25 @@ export const add_todo = {
 }
 
 export const list_todos = {
-  description: '列出待办事项（可选按完成状态筛选）',
+  description:
+    '列出待办事项。filter 参数用于筛选：不传或传 "all" 返回所有待办事项（包括已完成和未完成的）；传 "completed" 只返回已完成的；传 "incomplete" 只返回未完成的。当用户说"列出全部"、"列出所有"、"显示所有待办"时，必须传递 filter: "all" 或不传 filter 参数。',
   inputSchema: z.object({
-    completed: z.boolean().optional()
+    filter: z.enum(['all', 'completed', 'incomplete']).optional()
   }),
-  execute: async ({ completed }: { completed?: boolean }) => {
-    const where = completed === undefined ? {} : { completed }
+  execute: async ({
+    filter
+  }: {
+    filter?: 'all' | 'completed' | 'incomplete'
+  }) => {
+    // 如果没有提供 filter 参数或 filter 为 'all'，查询所有 todos
+    // 如果 filter 为 'completed'，只查询已完成的
+    // 如果 filter 为 'incomplete'，只查询未完成的
+    const where =
+      filter === undefined || filter === 'all'
+        ? {}
+        : filter === 'completed'
+        ? { completed: true }
+        : { completed: false }
     const todos = await prisma.todo.findMany({
       where,
       orderBy: { createdAt: 'desc' }
