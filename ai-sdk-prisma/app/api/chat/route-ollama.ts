@@ -16,6 +16,7 @@ export async function POST(req: Request) {
   const { messages, id }: { messages: UIMessage[]; id: string } =
     await req.json()
 
+  // 创建 Ollama 客户端
   const ollama = createOllama({
     // optional settings, e.g.
     baseURL: 'http://localhost:11434/api'
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
 
   // 将 UI 消息转换为 AI 模型预期的格式，并创建流式文本响应
   const result = streamText({
-    model: ollama('deepseek-r1:1.5b'), //gpt-oss:20b
+    model: ollama('gpt-oss:20b'),
     messages: convertToModelMessages(messages),
     temperature: 0.2,
     system:

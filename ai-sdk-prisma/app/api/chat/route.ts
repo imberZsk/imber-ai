@@ -1,7 +1,7 @@
-import { createOpenAI } from '@ai-sdk/openai'
 import { UIMessage, convertToModelMessages, streamText } from 'ai'
 import { saveChat } from '@/lib/save-chat'
 import { add_todo, list_todos, toggle_todo, delete_todo } from './todos-ai-sdk'
+import { createOllama } from 'ollama-ai-provider-v2'
 
 /// 最大执行时间（秒），用于服务器less函数超时设置
 export const maxDuration = 300
@@ -16,30 +16,15 @@ export async function POST(req: Request) {
   const { messages, id }: { messages: UIMessage[]; id: string } =
     await req.json()
 
-  let baseURL = process.env.OPENAI_BASE_URL
-  const apiKey = process.env.OPENAI_API_KEY
-
-  // 验证环境变量是否存在
-  if (!baseURL || !apiKey) {
-    throw new Error('OPENAI_BASE_URL 和 OPENAI_API_KEY 必须配置')
-  }
-
-  // 确保 baseURL 包含 /v1 后缀（对于兼容的 OpenAI API）
-  // 如果 baseURL 不包含 /v1，自动添加
-  if (baseURL && !baseURL.endsWith('/v1')) {
-    baseURL = baseURL.endsWith('/') ? `${baseURL}v1` : `${baseURL}/v1`
-  }
-
-  // 创建自定义 OpenAI 客户端
-  // 确保 baseURL 包含 /v1，这样会使用正确的路径 /v1/chat/completions
-  const openai = createOpenAI({
-    baseURL,
-    apiKey
+  // 创建 Ollama 客户端
+  const ollama = createOllama({
+    // optional settings, e.g.
+    baseURL: 'http://localhost:11434/api'
   })
 
   // 将 UI 消息转换为 AI 模型预期的格式，并创建流式文本响应
   const result = streamText({
-    model: openai('gpt-5'),
+    model: ollama('gpt-oss:20b'), //gpt-oss:20b
     messages: convertToModelMessages(messages),
     temperature: 0.2,
     system:

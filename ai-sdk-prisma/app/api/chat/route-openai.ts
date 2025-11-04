@@ -16,13 +16,6 @@ export async function POST(req: Request) {
   const { messages, id }: { messages: UIMessage[]; id: string } =
     await req.json()
 
-  // 创建自定义 OpenAI 客户端
-  // 注意：根据您的 API 文档配置正确的 baseURL 格式
-  //
-  // 常见格式：
-  // - OpenAI 标准：https://api.openai.com/v1
-  // - 兼容 API（需要 /v1）：https://api.302.ai/v1
-  // - 自定义格式：https://api.302.ai（根据 API 文档配置）
   let baseURL = process.env.OPENAI_BASE_URL
   const apiKey = process.env.OPENAI_API_KEY
 
