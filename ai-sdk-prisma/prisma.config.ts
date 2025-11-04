@@ -9,6 +9,6 @@ export default defineConfig({
   engine: 'classic',
   datasource: {
     url: env('DATABASE_URL'),
-    directUrl: env('DIRECT_URL')
+    directUrl: env('DIRECT_URL') //本地数据库不需要这个，云数据库supabase的时候需要
   }
 })
