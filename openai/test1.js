@@ -1,18 +1,17 @@
 import OpenAI from 'openai'
 import dotenv from 'dotenv'
 
-// 加载环境变量
 dotenv.config()
 
 const client = new OpenAI({
-  apiKey: process.env.APIKEY,
+  apiKey: process.env.API_KEY,
   baseURL: process.env.BASE_URL
 })
 
 async function main() {
   const stream = await client.chat.completions.create({
-    model: 'gpt-4',
-    messages: [{ role: 'user', content: '生成一个 Table 的 React 组件' }],
+    model: 'gpt-5',
+    messages: [{ role: 'user', content: '说你好' }],
     stream: true
   })
 
